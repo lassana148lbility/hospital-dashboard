@@ -5,13 +5,34 @@ import pandas as pd
 import numpy as np
 from datetime import datetime, timedelta
 
-# At the top of main.py after imports:
-if __name__ == "__main__":
-    import os
-    os.environ['NGROK_SKIP_BROWSER_WARNING'] = 'true'
+# Page configuration
+st.set_page_config(
+    page_title="Hospital Cybersecurity Dashboard",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
-st.set_page_config(page_title="Hospital Cybersecurity Dashboard", layout="wide")
+# Custom CSS for better responsiveness
+st.markdown("""
+    <style>
+    .block-container {padding-top: 1rem; padding-bottom: 1rem}
+    .element-container {margin-bottom: 1rem}
+    [data-testid="stMetricValue"] {font-size: clamp(1rem, 2vw, 1.2rem)}
+    [data-testid="stMetricLabel"] {font-size: clamp(0.8rem, 1.5vw, 1rem)}
+    .stTabs [data-baseweb="tab-list"] {gap: 1rem}
+    .stTabs [data-baseweb="tab"] {
+        height: auto;
+        padding: 10px;
+        white-space: pre-wrap;
+    }
+    @media (max-width: 640px) {
+        .block-container {padding: 1rem}
+        .stTabs [data-baseweb="tab"] {font-size: 0.8rem}
+    }
+    </style>
+""", unsafe_allow_html=True)
 
+# Sidebar
 with st.sidebar:
     st.subheader("Project Team")
     st.write("**Project Lead:** Mamun Ahmed (CIO)")
@@ -23,9 +44,11 @@ with st.sidebar:
     st.write("**Instructor:** Professor Manoj Akula")
     st.write("**Date:** December 6, 2024")
 
+# Main content
 st.title("🏥 Detroit Metropolitan Hospital")
 st.header("Cybersecurity Risk Management Dashboard")
 
+# Navigation
 tab1, tab2, tab3, tab4 = st.tabs([
     "Risk Assessment", 
     "Vulnerability Analysis", 
@@ -33,6 +56,7 @@ tab1, tab2, tab3, tab4 = st.tabs([
     "Security Recommendations"
 ])
 
+# Risk Assessment Tab
 with tab1:
     risk_data = pd.DataFrame({
         'Category': ['Network Security', 'Access Control', 'Data Protection', 'Employee Training'],
@@ -50,7 +74,19 @@ with tab1:
                      'High': 'orange',
                      'Medium': 'yellow'
                  })
-    fig.update_layout(height=400)
+    
+    fig.update_layout(
+        height=400,
+        margin=dict(l=20, r=20, t=30, b=20),
+        autosize=True,
+        legend=dict(
+            orientation="h",
+            yanchor="bottom",
+            y=1.02,
+            xanchor="right",
+            x=1
+        )
+    )
     st.plotly_chart(fig, use_container_width=True)
     
     cols = st.columns(3)
@@ -61,6 +97,7 @@ with tab1:
     with cols[2]:
         st.metric("Security Incidents", "12", "-3 from last month", help="Total reported security events")
 
+# Vulnerability Analysis Tab
 with tab2:
     st.subheader("Vulnerability Analysis")
     
@@ -90,8 +127,14 @@ with tab2:
             color_discrete_sequence=['#ff4b4b', '#ffa600', '#ffeb3b']
         )
         fig_severity.update_layout(
-            legend=dict(orientation="h", y=1.2),
-            margin=dict(t=80)
+            margin=dict(l=10, r=10, t=40, b=20),
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=-0.1,
+                xanchor="center",
+                x=0.5
+            )
         )
         st.plotly_chart(fig_severity, use_container_width=True)
     
@@ -104,11 +147,18 @@ with tab2:
             color_discrete_sequence=['#ff4b4b', '#36b37e', '#ffeb3b']
         )
         fig_status.update_layout(
-            legend=dict(orientation="h", y=1.2),
-            margin=dict(t=80)
+            margin=dict(l=10, r=10, t=40, b=20),
+            legend=dict(
+                orientation="h",
+                yanchor="bottom",
+                y=-0.1,
+                xanchor="center",
+                x=0.5
+            )
         )
         st.plotly_chart(fig_status, use_container_width=True)
 
+# Implementation Timeline Tab
 with tab3:
     st.subheader("Implementation Timeline")
     
@@ -136,13 +186,14 @@ with tab3:
         st.progress(phase_progress/100)
         
         for task, progress in tasks.items():
-            col1, col2 = st.columns([3, 1])
-            with col1:
+            cols = st.columns([3, 1])
+            with cols[0]:
                 st.progress(progress/100)
-            with col2:
-                st.write(f"{progress}%")
-            st.write(f"- {task}")
+            with cols[1]:
+                st.markdown(f"<div style='text-align: right'>{progress}%</div>", unsafe_allow_html=True)
+            st.markdown(f"<div style='margin-top: -1rem; margin-bottom: 1rem'>{task}</div>", unsafe_allow_html=True)
 
+# Security Recommendations Tab
 with tab4:
     st.subheader("Security Recommendations")
     
@@ -172,13 +223,18 @@ with tab4:
     
     st.dataframe(
         filtered_recommendations.style.applymap(
-            lambda x: 'background-color: #ffcdd2' if x == 'Critical' else (
-                'background-color: #ffe0b2' if x == 'High' else ''
+            lambda x: 'background-color: rgba(244, 67, 54, 0.2)' if x == 'Critical' else (
+                'background-color: rgba(255, 152, 0, 0.2)' if x == 'High' else ''
             ), 
             subset=['Priority']
-        ),
+        ).set_properties(**{
+            'background-color': 'white',
+            'color': 'black',
+            'border-color': '#e0e0e0'
+        }),
         hide_index=True,
-        use_container_width=True
+        use_container_width=True,
+        height=300
     )
     
     with st.form("new_recommendation"):
